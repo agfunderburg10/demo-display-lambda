@@ -19,5 +19,5 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       - run: sam build -u
-      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
+      - run: sam deploy --stack-name demo-display-lambda --resolve-s3 --s3-prefix demo-display-lambda --tags service-group=demo service-name=display-lambda--no-confirm-changeset --no-fail-on-empty-changeset
   
