@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: |-
+  demo-display-lambda
+  SAM Template for demo-display-lambda
+
+# To deploy
+# sam deploy --stack-name demo-display-lambda --profile group-deployer-demo --resolve-s3 --s3-prefix demo-display-lambda --tags service-group=demo service-name=display-lambda
+
+Parameters:
+  ServiceGroup:
+    Type: String
+    Default: demo
+    Description: The service group this service is a part of.
+  ServiceName:
+    Type: String
+    Default: display-lambda
+    Description: The name of this service.
+
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  AppFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      FunctionName: !Sub ${ServiceGroup}-${ServiceName}
+      AutoPublishAlias: live
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/${ServiceGroup}-${ServiceName}-lambda-execution
+      Environment:
+        Variables:
+          LOG_LEVEL: DEBUG
+      Events:
+        App:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
+
+Outputs:
+  AppApi:
+    Description: "API Gateway endpoint URL for Prod stage for function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  AppFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt AppFunction.Arn

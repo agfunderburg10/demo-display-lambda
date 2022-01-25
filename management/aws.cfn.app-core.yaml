@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |-
+  Core resources for execution of demo-display-lambda
+  Includes IAM resources for execution of the lambda
+
+# To update this stack
+# aws cloudformation deploy --stack-name demo-display-lambda-core --template-file management/aws.cfn.app-core.yaml --capabilities CAPABILITY_NAMED_IAM --tags service-group=demo
+
+Parameters:
+  ServiceGroup:
+    Type: String
+    Default: demo
+    Description: The service group this service is a part of.
+  ServiceName:
+    Type: String
+    Default: display-lambda
+    Description: The name of this service.
+
+Resources:
+  AppLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ServiceGroup}-${ServiceName}"
+      RetentionInDays: 60
+
+  AppIamManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:DescribeLogStreams"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource:
+              - !Sub arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/${ServiceGroup}-${ServiceName}*
+
+  AppIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ServiceGroup}-${ServiceName}-lambda-execution"
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - !Ref AppIamManagedPolicy
