@@ -1,0 +1,38 @@
+
+name: Deploy Lambda
+
+on:
+  workflow_run:
+    workflows:
+      - "Test Lambda"
+    types:
+      - "completed"
+    branches:
+      - release
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    environment: 
+      name: production
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Setup AWS Serverless Application Model (SAM)
+        uses: aws-actions/setup-sam@v1
+      - name: Configure AWS Credentials for Deployment
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: SAM Deployment to Lambda
+        run: |-
+          sam build -u
+          sam deploy --stack-name demo-display-lambda --resolve-s3 --s3-prefix demo-display-lambda --tags service-group=demo service-name=display-lambda--no-confirm-changeset --no-fail-on-empty-changeset
+  
