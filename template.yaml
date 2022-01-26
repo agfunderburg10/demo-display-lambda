@@ -29,7 +29,7 @@ Resources:
       Handler: app.lambda_handler
       Runtime: python3.8
       FunctionName: !Sub ${ServiceGroup}-${ServiceName}
-      AutoPublishAlias: live
+      AutoPublishAlias: stage
       Role: !Sub arn:aws:iam::${AWS::AccountId}:role/${ServiceGroup}-${ServiceName}-lambda-execution
       Environment:
         Variables:
@@ -48,3 +48,6 @@ Outputs:
   AppFunction:
     Description: "Lambda Function ARN"
     Value: !GetAtt AppFunction.Arn
+  StageVersion:
+    Description: "The version deployed to the stage alias."
+    Value: !Ref AppFunction.Version

@@ -2,6 +2,8 @@ name: Test Lambda
 
 on: 
   push:
+    branches-ignore:
+      - "wip*"
     paths:
       - '**.py'
 
